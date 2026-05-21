@@ -17,8 +17,6 @@ ecommerce-lakehouse-platform/
 │   │   └── 04_refined
 │   │       └── ecommerce_medallion_refined_dag.py
 │   └── Dockerfile
-├── datasets
-│   └── clientes_enrichment.csv
 ├── docs
 │   ├── architecture.md
 │   ├── decisions.md
@@ -26,10 +24,18 @@ ecommerce-lakehouse-platform/
 │   └── screenshots
 │       ├── airflow_dags.png
 │       ├── diagrama_arquitetura.png
+│       ├── evolucao_diaria_receita.png
 │       ├── hdfs_layers.png
 │       ├── modelo_dimensional.png
+│       ├── receita_mensal.png
+│       ├── receita_por_categoria.png
+│       ├── receita_por_dia_semana.png
 │       ├── spark_cluster.png
-│       └── superset_dashboard.png
+│       ├── superset_dashboard.png
+│       ├── tendencia_de_pagamentos_por_status.png
+│       ├── top_clientes_receita.png
+│       ├── top_produtos_receita.png
+│       └── volume_pedidos_status_pagamento.png
 ├── infra
 │   ├── docker
 │   │   └── docker-compose.yml
@@ -84,7 +90,7 @@ ecommerce-lakehouse-platform/
     │       └── sales_analytics.md
     ├── docker
     │   └── Dockerfile
-    ├── drivers
+    ├── external-jars
     │   └── hive-jdbc-2.3.9-standalone.jar
     ├── sql
     │   ├── customer_analytics
@@ -95,7 +101,7 @@ ecommerce-lakehouse-platform/
     │   │   ├── ticket_medio_confirmado.sql
     │   │   └── total_pedidos_confirmados.sql
     │   ├── payment_analytics
-    │   │   ├── tendencia_receita_pagamentos.sql
+    │   │   ├── tendencia_de_pagamentos_por_status.sql
     │   │   └── volume_pedidos_status_pagamento.sql
     │   ├── product_analytics
     │   │   └── top_produtos_receita.sql
@@ -107,7 +113,11 @@ ecommerce-lakehouse-platform/
     │   │   └── receita_por_dia_semana.sql
     │   └── semantic_layer
     │       └── vw_fato_vendas_enriquecida.sql
-    └── superset_config.py
+    ├── superset_config.py
+    └── superset_home
+```
+
+
 ### Semantic Layer
 
 A view `vw_fato_vendas_enriquecida.sql` é utilizada como camada semântica analítica reutilizável para consumo no Apache Superset.
