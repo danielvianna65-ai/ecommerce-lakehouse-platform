@@ -257,7 +257,7 @@ services:
 
     volumes:
       - ../../superset/superset_home:/app/superset_home
-      - ../../superset/drivers:/app/drivers
+      - *spark-jars
       - ../../superset/superset_config.py:/app/pythonpath/superset_config.py
 
     command: >
