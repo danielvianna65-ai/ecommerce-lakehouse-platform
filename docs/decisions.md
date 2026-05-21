@@ -208,7 +208,7 @@ Utilizar Hive Metastore como catálogo centralizado.
 Necessidade de:
 
 * Governança analítica
-* SQL serving
+* Camada analítica SQL
 * Integração com BI
 * Metadata centralizada
 

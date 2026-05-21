@@ -2,7 +2,7 @@
 
 Documentação técnica da arquitetura de dados utilizada na plataforma Ecommerce Lakehouse Analytics Platform.
 
-Este documento descreve as estratégias arquiteturais, processamento distribuído, incrementalidade, modelagem dimensional e serving analítico implementados na solução.
+Este documento descreve as estratégias arquiteturais, processamento distribuído, incrementalidade, modelagem dimensional e Camada analítica SQL  implementados na solução.
 
 ---
 
@@ -15,7 +15,7 @@ A arquitetura foi projetada para garantir:
 * Governança de dados
 * Reprocessamento controlado
 * Consistência analítica
-* SQL serving distribuído
+* Camada analítica SQL
 * Separação entre storage e compute
 
 ---
@@ -129,15 +129,20 @@ Responsável por:
 
 ```text
 /data/
-├── 01_landing/
-├── 02_raw/
-├── 03_trusted/
-└── 04_refined/
+├── 01_landing/   # Ingestão incremental de dados
+├── 02_raw/       # Bronze layer - persistência bruta
+├── 03_trusted/   # Silver layer - validação e padronização
+├── 04_refined/   # Gold layer - datasets analíticos para BI
+├── reference/    # Dados auxiliares e enriquecimento
+└── warehouse/    # Hive Metastore warehouse
 ```
 
 ---
 
 ## Estratégia de Particionamento
+
+Os tabelas são particionados pela coluna `dt`, derivada da data da transação de negócio.
+
 
 Particionamento baseado em data:
 
@@ -401,7 +406,6 @@ A plataforma implementa mecanismos de observabilidade operacional e monitorament
 * Spark UI
 * DAG monitoring
 * Controle incremental por metadata
-* Arquivos `_SUCCESS`
 * Monitoramento operacional
 
 ---
@@ -414,12 +418,12 @@ A arquitetura utiliza estratégias voltadas para eficiência operacional e escal
 
 ## Estratégias Implementadas
 
-* Processamento distribuído
-* Batch incremental
+* Processamento distribuído com Apache Spark
+* Processamento incremental em batch
 * Partition pruning
-* Delta Merge
+* Incremental merge com Delta Lake
 * Separação entre storage e compute
-* Reprocessamento controlado
+* Reprocessamento controlado por partição
 * Isolamento por camadas
 
 ---

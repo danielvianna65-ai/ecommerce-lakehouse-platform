@@ -1,27 +1,21 @@
-# Ecommerce Lakehouse Analytics Platform
-
-Plataforma analítica Lakehouse end-to-end para ecommerce utilizando Medallion Architecture com Apache Spark, Delta Lake, Apache Airflow, HDFS, Hive Metastore, Spark ThriftServer e Apache Superset para processamento distribuído, SQL Serving Layer e BI analytics.
+# Ecommerce Lakehouse Analytics Platform 
 
 ---
+Plataforma analítica Lakehouse end-to-end para ecommerce utilizando Medallion Architecture com Apache Spark, Delta Lake, Apache Airflow, HDFS, Hive Metastore, Spark Thrift Server e Apache Superset para processamento distribuído, analytics SQL e consumo BI.
 
 # 📌 Visão Geral
 
+
 Este projeto implementa uma plataforma moderna de engenharia e analytics de dados voltada para processamento distribuído em larga escala.
 
-A plataforma realiza ingestão incremental de dados transacionais de ecommerce a partir do MySQL e datasets externos de enriquecimento, processa os dados através de uma arquitetura Medallion utilizando Apache Spark e Delta Lake, disponibiliza datasets analíticos através do Hive Metastore e Spark ThriftServer, e entrega dashboards executivos utilizando Apache Superset.
-
-Datasets auxiliares utilizados no processo de enrichment estão disponíveis em:
-
-```text
-datasets/
-```
+A plataforma realiza ingestão incremental de dados transacionais de ecommerce a partir do MySQL e datasets externos de enriquecimento, processa os dados através de uma arquitetura Medallion utilizando Apache Spark e Delta Lake, disponibiliza datasets analíticos através do Hive Metastore e Spark Thrift Server e entrega dashboards executivos utilizando Apache Superset.
 
 A arquitetura simula um ambiente enterprise de Lakehouse Analytics incluindo:
 
 * Orquestração de pipelines
 * Processamento distribuído
 * Modelagem dimensional
-* SQL serving layer
+* Camada analítica SQL
 * Analytics e BI
 * Governança de dados
 * Data Lake distribuído
@@ -48,30 +42,6 @@ A arquitetura simula um ambiente enterprise de Lakehouse Analytics incluindo:
 | PostgreSQL 15 (Airflow DB) | Metadata do Airflow                     |
 | PostgreSQL 15 (Hive DB)    | Backend do Hive Metastore               |
 | Docker Compose 5.1.3       | Infraestrutura                          |
-
----
-
-# 🔄 Fluxo da Plataforma
-
-```text
-MySQL / CSV
-      ↓
-Landing
-      ↓
-Raw
-      ↓
-Trusted
-      ↓
-Refined
-      ↓
-Hive Metastore
-      ↓
-Spark ThriftServer
-      ↓
-Apache Superset
-      ↓
-Analytics Dashboards
-```
 
 ---
 
@@ -355,7 +325,7 @@ Demonstrar a construção de uma plataforma moderna de engenharia e analytics de
 * Engenharia de Dados
 * Processamento Distribuído
 * Data Lakehouse
-* SQL Serving
+* Camada analítica SQL
 * Modelagem Dimensional
 * Business Intelligence
 * Governança de Dados
