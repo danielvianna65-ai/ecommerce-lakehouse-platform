@@ -112,7 +112,7 @@ A plataforma implementa uma camada completa de analytics e SQL.
 
 ## Hive Metastore
 
-Responsável pelo catálogo centralizado de schemas e tabelas analíticas ad hoc.
+Responsável pelo catálogo centralizado de schemas e tabelas analíticas para consultas ad hoc.
 
 ---
 
