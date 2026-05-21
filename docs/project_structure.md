@@ -48,6 +48,7 @@ ecommerce-lakehouse-platform/
 │   ├── external-jars
 │   │   ├── delta-spark_2.12-3.2.0.jar
 │   │   ├── delta-storage-3.2.0.jar
+│   │   ├── hive-jdbc-2.3.9-standalone.jar
 │   │   ├── mysql-connector-j-8.3.0.jar
 │   │   └── postgresql-42.7.3.jar
 │   └── jobs
@@ -90,8 +91,6 @@ ecommerce-lakehouse-platform/
     │       └── sales_analytics.md
     ├── docker
     │   └── Dockerfile
-    ├── external-jars
-    │   └── hive-jdbc-2.3.9-standalone.jar
     ├── sql
     │   ├── customer_analytics
     │   │   └── top_clientes_receita.sql
