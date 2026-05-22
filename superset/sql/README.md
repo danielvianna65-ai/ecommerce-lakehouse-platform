@@ -1,8 +1,10 @@
 # Analytics Engineering Layer
 
-Esta camada organiza consultas analíticas reutilizáveis utilizadas pelos dashboards Apache Superset da plataforma analytics.
+Esta camada organiza consultas analíticas reutilizáveis utilizadas pelos dashboards Apache Superset da plataforma analítica.
 
 As queries foram separadas por domínio analítico para padronização de métricas, reutilização de SQL e simplificação da camada BI.
+
+A abordagem segue princípios de Analytics Engineering, separando lógica analítica, semantic layer e visualização BI.
 
 ---
 
@@ -31,7 +33,7 @@ A camada semântica é responsável por abstrair a complexidade da modelagem dim
 refined.vw_fato_vendas_enriquecida
 ```
 
-Essa view consolida:
+Essa view atua como camada semântica reutilizável para consumo analítico distribuído.
 
 - Dimensão Cliente
 - Dimensão Produto
@@ -40,6 +42,16 @@ Essa view consolida:
 - Métricas de vendas
 
 A semantic layer é utilizada como base reutilizável para consultas analíticas e dashboards executivos.
+
+
+## Benefícios da Semantic Layer
+
+- Redução de duplicação lógica nos dashboards
+- Padronização de KPIs
+- Centralização de regras analíticas
+- Simplificação da camada BI
+- Governança de métricas
+- Reutilização analítica distribuída
 
 ---
 
@@ -125,4 +137,4 @@ Fluxo de consumo analítico:
 Spark SQL → Hive Metastore → Spark ThriftServer → Apache Superset
 ```
 
-A camada SQL atua como abstração analítica reutilizável para consumo via BI e consultas distribuídas.
+A camada SQL atua como serving layer analítica reutilizável para consumo via BI, dashboards executivos e consultas distribuídas.
