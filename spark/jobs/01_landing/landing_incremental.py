@@ -19,7 +19,7 @@ parser.add_argument("--jdbc_password", required=True)
 parser.add_argument("--execution_date", required=True)
 
 # =====================================================
-# Paths
+# Configs
 # =====================================================
 args = parser.parse_args()
 
@@ -27,6 +27,9 @@ table = args.table
 watermark_col = args.watermark_col
 execution_date = args.execution_date
 
+# =====================================================
+# Paths
+# =====================================================
 landing_path = f"{args.landing_base}/{table}"
 watermark_path = f"{args.landing_base}/_watermarks/{table}"
 
