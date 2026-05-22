@@ -28,6 +28,28 @@ A arquitetura simula um ambiente enterprise de Lakehouse Analytics incluindo:
 
 ---
 
+# 🗄️ Estrutura do Data Lake
+
+```text
+/data/
+├── 01_landing/
+├── 02_raw/
+├── 03_trusted/
+├── 04_refined/
+└── reference/
+```
+
+As tabelas Delta Lake são persistidas diretamente no HDFS e registradas no Hive Metastore através de `LOCATION` explícita.
+
+Essa estratégia desacopla:
+
+- armazenamento físico
+- catálogo Hive
+- camada SQL analítica
+
+permitindo maior flexibilidade arquitetural e alinhamento com arquiteturas modernas Lakehouse.
+
+---
 # 🧱 Stack Tecnológica
 
 | Tecnologia                 | Finalidade                              |
@@ -101,18 +123,18 @@ Camada analítica baseada em modelagem dimensional.
 * Tabelas fato e dimensão
 * SCD Tipo 2
 * Camada semântica analítica
-* Datasets otimizados para consulta analítica
+* Datasets Delta Lake otimizados para consulta analítica
 * Enriquecimento dimensional
 
 ---
 
-# 📊 Camada Analytics
+# 📊 Camada Analítica
 
 A plataforma implementa uma camada completa de analytics e SQL.
 
 ## Hive Metastore
 
-Responsável pelo catálogo centralizado de schemas e tabelas analíticas para consultas ad hoc.
+Responsável pelo catálogo centralizado de schemas e tabelas analíticas registradas sobre datasets Delta Lake persistidos no HDFS via `LOCATION` explícita.
 
 ---
 
@@ -290,7 +312,7 @@ docker compose up -d
 * SCD Tipo 2
 * Modelagem dimensional
 * Hive Metastore
-* Spark SQL serving
+* Camada analítica SQL distribuída
 * Dashboards executivos
 * Infraestrutura dockerizada
 * Arquitetura Lakehouse

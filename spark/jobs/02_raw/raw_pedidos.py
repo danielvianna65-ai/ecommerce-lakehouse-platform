@@ -110,7 +110,7 @@ else:
         landing_dt_df
         .select("dt")
         .distinct()
-        .orderBy(F.col("dt").desc())
+        .orderBy(F.desc("dt"))
         .limit(LOOKBACK_DAYS)
     )
 

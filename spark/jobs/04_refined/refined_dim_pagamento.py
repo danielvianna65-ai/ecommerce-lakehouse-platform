@@ -99,7 +99,6 @@ spark.sql("SHOW DATABASES").show(truncate=False)
 
 spark.sql("""
 CREATE DATABASE IF NOT EXISTS refined
-LOCATION 'hdfs://namenode:8020/data/warehouse/refined.db'
 """)
 
 spark.sql("""

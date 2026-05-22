@@ -127,21 +127,24 @@ Responsável por:
 
 ## Estrutura do Data Lake
 
+A plataforma utiliza estratégia de armazenamento desacoplada do catálogo Hive, utilizando Delta Lake com tabelas registradas via `LOCATION` explícita no Hive Metastore.
+
+O armazenamento físico das camadas analíticas é realizado diretamente no HDFS através de paths controlados pela plataforma.
+
 ```text
 /data/
 ├── 01_landing/   # Ingestão incremental de dados
-├── 02_raw/       # Bronze layer - persistência bruta
-├── 03_trusted/   # Silver layer - validação e padronização
-├── 04_refined/   # Gold layer - datasets analíticos para BI
-├── reference/    # Dados auxiliares e enriquecimento
-└── warehouse/    # Hive Metastore warehouse
+├── 02_raw/       # Bronze layer - persistência bruta Delta Lake
+├── 03_trusted/   # Silver layer - validação e conformidade
+├── 04_refined/   # Gold layer - datasets analíticos e modelagem dimensional
+└── reference/    # Dados auxiliares e enriquecimento dimensional
 ```
 
 ---
 
 ## Estratégia de Particionamento
 
-Os tabelas são particionados pela coluna `dt`, derivada da data da transação de negócio.
+As tabelas são particionados pela coluna `dt`, derivada da data da transação de negócio.
 
 
 Particionamento baseado em data:
@@ -282,15 +285,26 @@ As dimensões históricas utilizam:
 
 ---
 
-# 📊 SQL Serving & Analytics Layer
+# 📊 Camada Analítica SQL
 
-A plataforma implementa uma camada de serving analítico sobre o Lakehouse.
+A plataforma implementa uma Camada analítica SQL sobre o Lakehouse.
 
 ---
 
 ## Hive Metastore
 
-Responsável pelo catálogo centralizado de schemas e tabelas analíticas.
+
+Responsável pelo catálogo centralizado de schemas, tabelas analíticas e metadata SQL da plataforma.
+
+As tabelas Delta Lake são registradas utilizando `LOCATION` explícita sobre datasets armazenados no HDFS, desacoplando catálogo lógico e armazenamento físico.
+
+Essa abordagem permite:
+
+* Interoperabilidade entre engines SQL
+* Governança centralizada de metadata
+* Flexibilidade arquitetural
+* Rebuild controlado do storage
+* Separação entre metadata e persistência física
 
 ---
 
@@ -309,14 +323,14 @@ Responsável pela visualização analítica e consumo de dashboards.
 ## Fluxo Analítico
 
 ```text
-Refined Layer
-      ↓
+Delta Lake Tables (HDFS)
+            ↓
 Hive Metastore
-      ↓
+            ↓
 Spark ThriftServer
-      ↓
+            ↓
 Apache Superset
-      ↓
+            ↓
 Executive Dashboards
 ```
 
@@ -325,7 +339,6 @@ Executive Dashboards
 # 🧠 Semantic Layer
 
 A camada semântica é baseada em views analíticas reutilizáveis.
-
 ---
 
 ## Principal View Analítica
@@ -333,6 +346,24 @@ A camada semântica é baseada em views analíticas reutilizáveis.
 ```sql
 refined.vw_fato_vendas_enriquecida
 ```
+
+---
+
+## Estratégia de Metadata
+
+A plataforma utiliza estratégia de catálogo desacoplado do armazenamento físico.
+
+Os datasets Delta Lake são persistidos diretamente no HDFS e registrados no Hive Metastore através de `LOCATION` explícita.
+
+Essa abordagem fornece:
+
+* Independência entre catálogo e storage
+* Flexibilidade operacional
+* Reprocessamento controlado
+* Facilidade de recuperação do ambiente
+* Compatibilidade com múltiplas engines SQL
+* Arquitetura alinhada a padrões modernos Lakehouse
+
 ---
 # 📊 Analytics Engineering Layer
 

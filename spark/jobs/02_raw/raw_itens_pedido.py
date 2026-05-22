@@ -110,7 +110,7 @@ else:
         landing_dt_df
         .select("dt")
         .distinct()
-        .orderBy(F.col("dt").desc())
+        .orderBy(F.desc("dt"))
         .limit(LOOKBACK_DAYS)
     )
 
@@ -161,7 +161,7 @@ standardized_customers_df = (
         F.col("id_produto").cast("int").alias("id_produto"),
         F.col("quantidade").cast("int").alias("quantidade"),
         F.col("data_transacao").cast("timestamp").alias("data_transacao"),
-        F.col("preco_unitario").cast(DecimalType(10, 2)).alias("preco_unitario"),
+        F.col("preco_unitario").cast(DecimalType(12, 2)).alias("preco_unitario"),
         F.col("dt").cast("date").alias("dt")
     )
 )

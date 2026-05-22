@@ -19,7 +19,7 @@ parser.add_argument("--jdbc_password", required=True)
 parser.add_argument("--execution_date", required=True)
 
 # =====================================================
-# Configs
+# Configs Args
 # =====================================================
 args = parser.parse_args()
 
@@ -33,9 +33,9 @@ execution_date = args.execution_date
 landing_path = f"{args.landing_base}/{table}"
 watermark_path = f"{args.landing_base}/_watermarks/{table}"
 
-# ==========================
+# =====================================================
 # Spark Session
-# ==========================
+# =====================================================
 spark = (
     SparkSession.builder
     .appName(f"landing_incremental_{table}")
@@ -48,9 +48,9 @@ spark = (
 print(f"[INFO] Tabela: {table}")
 print(f"[INFO] Execution date: {execution_date}")
 
-# ==========================
+# =====================================================
 # 1) Ler watermark do metadata
-# ==========================
+# =====================================================
 stored_watermark = None
 
 try:
@@ -67,9 +67,9 @@ try:
 except Exception:
     print("[INFO] Primeira execução - watermark ainda não existe.")
 
-# ==========================
+# =====================================================
 # 2) Montar query incremental
-# ==========================
+# =====================================================
 if stored_watermark:
     jdbc_extraction_query = f"""
         (SELECT *
@@ -81,9 +81,9 @@ else:
 
 print("[INFO] Query de extração JDBC montada.")
 
-# ==========================
+# =====================================================
 # 3) Ler JDBC incremental
-# ==========================
+# =====================================================
 jdbc_connection_properties = {
     "user": args.jdbc_user,
     "password": args.jdbc_password,
@@ -99,25 +99,25 @@ incremental_extract_df = (
     .load()
 )
 
-# ==========================
+# =====================================================
 # 4) Check vazio leve
-# ==========================
+# =====================================================
 if incremental_extract_df.rdd.isEmpty():
     print("[INFO] Nenhum dado novo.")
     spark.stop()
     exit(0)
 
-# ==========================
+# =====================================================
 # 5) Adicionar partição dt
-# ==========================
+# =====================================================
 incremental_partitioned_df = incremental_extract_df.withColumn(
     "dt",
     to_date(col(watermark_col))
 )
 
-# ==========================
+# =====================================================
 # 7) Escrever incremental na LANDING
-# ==========================
+# =====================================================
 (
     incremental_partitioned_df.write
     .mode("append")
@@ -127,9 +127,9 @@ incremental_partitioned_df = incremental_extract_df.withColumn(
 
 print(f"[INFO] Ingestão incremental concluída para {table}")
 
-# ==========================
+# =====================================================
 # 8) Atualizar watermark metadata
-# ==========================
+# =====================================================
 latest_incremental_watermark = (
     incremental_partitioned_df
     .agg(spark_max(col(watermark_col)).alias("max_ts"))
