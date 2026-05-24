@@ -8,9 +8,9 @@ services:
   airflow-db:
     image: postgres:15
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${AIRFLOW_DB_USER:-}
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD:-}
+      POSTGRES_DB: ${AIRFLOW_DB_NAME:-}
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     networks:
@@ -28,13 +28,13 @@ services:
     command: >
       -c "
       airflow db init &&
-      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com
+      airflow users create --username ${AIRFLOW_ADMIN_USERNAME:-} --password ${AIRFLOW_ADMIN_PASSWORD:-} --firstname ${AIRFLOW_ADMIN_FIRSTNAME:-} --lastname ${AIRFLOW_ADMIN_LASTNAME:-} --role Admin --email ${AIRFLOW_ADMIN_EMAIL:-}
       "
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__FERNET_KEY: "Yxkq3Y6j9mJpZ2v8L8zJ8Yb0K0Yz5yGxF5w3R2Q1abc="
-      AIRFLOW__WEBSERVER__SECRET_KEY: "super-secret-static-key"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET_KEY:-}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-}:${AIRFLOW_DB_PASSWORD:-}@airflow-db:5432/${AIRFLOW_DB_NAME:-}
     networks:
       - medallion-net
 
@@ -49,14 +49,17 @@ services:
       - airflow-init
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__FERNET_KEY: "Yxkq3Y6j9mJpZ2v8L8zJ8Yb0K0Yz5yGxF5w3R2Q1abc="
-      AIRFLOW__WEBSERVER__SECRET_KEY: "super-secret-static-key"
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET_KEY:-}
       AIRFLOW__WEBSERVER__SESSION_COOKIE_NAME: airflow_session
       AIRFLOW__WEBSERVER__COOKIE_SAMESITE: Lax
       AIRFLOW__WEBSERVER__COOKIE_SECURE: "False"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-}:${AIRFLOW_DB_PASSWORD:-}@airflow-db:5432/${AIRFLOW_DB_NAME:-}
       AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "False"
       AIRFLOW__CORE__DEFAULT_TIMEZONE: America/Sao_Paulo
+      AIRFLOW_VAR_ECOMMERCE_JDBC_URL: ${ECOMMERCE_JDBC_URL:-}
+      AIRFLOW_VAR_ECOMMERCE_JDBC_USER: ${ECOMMERCE_JDBC_USER:-}
+      AIRFLOW_VAR_ECOMMERCE_JDBC_PASSWORD: ${ECOMMERCE_JDBC_PASSWORD:-}
       TZ: America/Sao_Paulo
     volumes:
       - ../../airflow/dags:/opt/airflow/dags
@@ -81,10 +84,13 @@ services:
       - airflow-init
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__FERNET_KEY: "Yxkq3Y6j9mJpZ2v8L8zJ8Yb0K0Yz5yGxF5w3R2Q1abc="
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-}:${AIRFLOW_DB_PASSWORD:-}@airflow-db:5432/${AIRFLOW_DB_NAME:-}
       AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "False"
       AIRFLOW__CORE__DEFAULT_TIMEZONE: America/Sao_Paulo
+      AIRFLOW_VAR_ECOMMERCE_JDBC_URL: ${ECOMMERCE_JDBC_URL:-}
+      AIRFLOW_VAR_ECOMMERCE_JDBC_USER: ${ECOMMERCE_JDBC_USER:-}
+      AIRFLOW_VAR_ECOMMERCE_JDBC_PASSWORD: ${ECOMMERCE_JDBC_PASSWORD:-}
       TZ: America/Sao_Paulo
     volumes:
       - ../../airflow/dags:/opt/airflow/dags
@@ -137,9 +143,9 @@ services:
     image: postgres:15
     restart: unless-stopped
     environment:
-      POSTGRES_DB: metastore
-      POSTGRES_USER: hive
-      POSTGRES_PASSWORD: hive
+      POSTGRES_DB: ${HIVE_METASTORE_DB_NAME:-}
+      POSTGRES_USER: ${HIVE_METASTORE_DB_USER:-}
+      POSTGRES_PASSWORD: ${HIVE_METASTORE_DB_PASSWORD:-}
       POSTGRES_HOST_AUTH_METHOD: md5
     command: >
       postgres -c password_encryption=md5
@@ -170,9 +176,9 @@ services:
 
       SERVICE_OPTS: >
         -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
-        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://hive-metastore-db:5432/metastore
-        -Djavax.jdo.option.ConnectionUserName=hive
-        -Djavax.jdo.option.ConnectionPassword=hive
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://hive-metastore-db:5432/${HIVE_METASTORE_DB_NAME:-}
+        -Djavax.jdo.option.ConnectionUserName=${HIVE_METASTORE_DB_USER:-}
+        -Djavax.jdo.option.ConnectionPassword=${HIVE_METASTORE_DB_PASSWORD:-}
         -Dhive.execution.engine=mr
 
     ports:
@@ -249,7 +255,7 @@ services:
       - spark-thriftserver
 
     environment:
-      SUPERSET_SECRET_KEY: supersecretkey
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-}
       TZ: America/Sao_Paulo
 
     ports:
@@ -324,7 +330,8 @@ services:
 
 networks:
   medallion-net:
-    external: true
+    name: medallion-net
+    driver: bridge
 
 volumes:
   namenode-data:
