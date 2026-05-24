@@ -66,9 +66,9 @@ with DAG(
             application_args=[
                 "--table", table,
                 "--landing_base", "hdfs://namenode:8020/data/01_landing/ecommerce",
-                "--jdbc_url", "jdbc:mysql://172.17.0.1:3306/ecommerce?useSSL=false&allowPublicKeyRetrieval=true",
-                "--jdbc_user", "spark",
-                "--jdbc_password", "Spark@123#2026",
+                "--jdbc_url", "{{ var.value.ecommerce_jdbc_url }}",
+                "--jdbc_user", "{{ var.value.ecommerce_jdbc_user }}",
+                "--jdbc_password", "{{ var.value.ecommerce_jdbc_password }}",
                 "--execution_date",
                 "{{ data_interval_start.in_timezone('America/Sao_Paulo').to_date_string() }}"
             ],
@@ -86,7 +86,7 @@ with DAG(
                 "spark.hadoop.dfs.replication": "1",
                 "spark.jars": "/opt/spark/external-jars/mysql-connector-j-8.3.0.jar",
             },
-            verbose=True,
+            verbose=False,
         )
 
         landing_tasks.append(task)

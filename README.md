@@ -60,7 +60,7 @@ permitindo maior flexibilidade arquitetural e alinhamento com arquiteturas moder
 | Hadoop HDFS 3.2.1          | Data Lake distribuído                   |
 | Hive Metastore 4.0.0       | Catálogo centralizado                   |
 | Spark ThriftServer 3.5.8   | Camada SQL                              |
-| Apache Superset 6.0.1      | BI Analytics                            |
+| Apache Superset            | BI Analytics                            |
 | PostgreSQL 15 (Airflow DB) | Metadata do Airflow                     |
 | PostgreSQL 15 (Hive DB)    | Backend do Hive Metastore               |
 | Docker Compose 5.1.3       | Infraestrutura                          |
@@ -286,7 +286,7 @@ Granularidade:
 ## Subir infraestrutura
 
 ```bash
-docker compose up -d
+docker compose -f infra/docker/docker-compose.yml up -d
 ```
 
 ---
@@ -351,5 +351,4 @@ Demonstrar a construção de uma plataforma moderna de engenharia e analytics de
 * Modelagem Dimensional
 * Business Intelligence
 * Governança de Dados
-
 

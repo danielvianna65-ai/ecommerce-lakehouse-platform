@@ -98,7 +98,7 @@ refined.vw_fato_vendas_enriquecida
 - `superset/sql/payment_analytics/volume_pedidos_status_pagamento.sql`
 
 
-- `superset/sql/payment_analytics/tendencia_receita_pagamentos.sql`
+- `superset/sql/payment_analytics/tendencia_de_pagamentos_por_status.sql`
 
 ---
 

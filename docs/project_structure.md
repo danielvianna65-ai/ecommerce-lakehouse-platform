@@ -4,6 +4,7 @@
 ecommerce-lakehouse-platform/
 │    
 ├── airflow
+│   ├── .dockerignore
 │   ├── dags
 │   │   ├── 01_landing
 │   │   │   ├── clientes_enrichment_landing_dag.py
@@ -17,6 +18,8 @@ ecommerce-lakehouse-platform/
 │   │   └── 04_refined
 │   │       └── ecommerce_medallion_refined_dag.py
 │   └── Dockerfile
+├── datasets
+│   └── clientes_enrichment.csv
 ├── docs
 │   ├── architecture.md
 │   ├── decisions.md
@@ -38,12 +41,14 @@ ecommerce-lakehouse-platform/
 │       └── volume_pedidos_status_pagamento.png
 ├── infra
 │   ├── docker
+│   │   ├── .env.example
 │   │   └── docker-compose.yml
 │   └── hadoop
 │       ├── core-site.xml
 │       └── hdfs-site.xml
 ├── README.md
 ├── spark
+│   ├── .dockerignore
 │   ├── Dockerfile
 │   ├── external-jars
 │   │   ├── delta-spark_2.12-3.2.0.jar
@@ -112,11 +117,20 @@ ecommerce-lakehouse-platform/
     │   │   └── receita_por_dia_semana.sql
     │   └── semantic_layer
     │       └── vw_fato_vendas_enriquecida.sql
-    ├── superset_config.py
-    └── superset_home
+    └── superset_config.py
 ```
 
 
 ### Semantic Layer
 
 A view `vw_fato_vendas_enriquecida.sql` é utilizada como camada semântica analítica reutilizável para consumo no Apache Superset.
+
+### Diretórios de runtime ignorados
+
+Os diretórios e arquivos gerados em execução local ficam fora da estrutura versionada principal:
+
+- `airflow/logs/`
+- `superset/superset_home/`
+- `.venv/`
+- `__pycache__/`
+- `infra/docker/.env`
