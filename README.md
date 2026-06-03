@@ -167,12 +167,6 @@ A plataforma possui:
 - Payment Analytics
 - Product Analytics
 
-Todas as consultas reutilizam a view analítica:
-
-```sql
-refined.vw_fato_vendas_enriquecida
-```
-
 ---
 
 ## Principal View Analítica
@@ -181,7 +175,7 @@ refined.vw_fato_vendas_enriquecida
 refined.vw_fato_vendas_enriquecida
 ```
 
-Essa view semântica alimenta todos os dashboards e análises do projeto.
+A view semântica centraliza os dados consumidos pelos dashboards, métricas e análises do projeto, servindo como principal camada analítica reutilizável.
 
 ---
 
