@@ -78,12 +78,19 @@ DEFAULT_ARGS = {
 # ======================================================
 
 with DAG(
-    dag_id="04_ecommerce_refined",
+    dag_id="04_refined_dimensional_modeling",
+    description="Refined layer - construção de modelos dimensionais para analytics e BI.",
     start_date=pendulum.datetime(2026, 1, 1, tz="America/Sao_Paulo"),
     schedule_interval=None,
     catchup=False,
     default_args=DEFAULT_ARGS,
-    tags=["refined", "dw", "ecommerce"],
+        tags=[
+            "refined",
+            "enrichment",
+            "star-schema",
+            "dimensional-modeling",
+            "analytics",
+        ],
 ) as dag:
 
     # ==================================================

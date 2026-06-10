@@ -4,6 +4,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp, lit, col
 from delta.tables import DeltaTable
+import sys
 
 # =====================================================
 # Config
@@ -26,6 +27,26 @@ spark = (
     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
     .getOrCreate()
+)
+
+# =====================================================
+# BOOTSTRAP CHECK (executa apenas na primeira carga)
+# =====================================================
+fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(
+    spark._jsc.hadoopConfiguration()
+)
+
+path = spark._jvm.org.apache.hadoop.fs.Path(raw_path)
+
+if fs.exists(path):
+    print(
+        f"[RAW][{table}] Dataset já existe em {raw_path}. Encerrando."
+    )
+    spark.stop()
+    sys.exit(0)
+
+print(
+    f"[RAW][{table}] Primeira execução. Iniciando carga."
 )
 
 # ======================================================

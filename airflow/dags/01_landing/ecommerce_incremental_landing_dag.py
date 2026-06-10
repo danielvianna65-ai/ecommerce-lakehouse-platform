@@ -22,6 +22,20 @@ TABLES_ECOMMERCE = [
 ]
 
 # =========================================================
+# SPARK CONFIGS
+# =========================================================
+SPARK_CONF = {
+    "spark.executor.instances": "1",
+    "spark.executor.memory": "3g",
+    "spark.executor.cores": "2",
+    "spark.cores.max": "2",
+    "spark.driver.memory": "1g",
+    "spark.sql.adaptive.enabled": "true",
+    "spark.sql.shuffle.partitions": "4",
+    "spark.hadoop.dfs.replication": "1",
+}
+
+# =========================================================
 # Default args
 # =========================================================
 DEFAULT_ARGS = {
@@ -35,15 +49,23 @@ DEFAULT_ARGS = {
 # DAG
 # =========================================================
 with DAG(
-    dag_id="01_landing_incremental_ecommerce",
-    description="Landing layer incremental - ingestão universal via watermark",
+    dag_id="01_landing_ingestion",
+        description="""
+    Landing layer - ingestão incremental de dados transacionais via JDBC
+    e dados de referência utilizados para enriquecimento analítico.
+    """,
     default_args=DEFAULT_ARGS,
     start_date=pendulum.datetime(2026, 1, 1, tz="America/Sao_Paulo"),
     schedule=None,
     catchup=False,
     max_active_tasks=4,
     max_active_runs=1,
-    tags=["ecommerce", "landing", "incremental", "spark"],
+        tags=[
+            "landing",
+            "ingestion",
+            "reference-data",
+            "spark"
+        ],
 ) as dag:
 
     landing_tasks = []
@@ -76,28 +98,40 @@ with DAG(
             # Configurações Spark / MySQL
             # ==========================
             conf={
-                "spark.executor.instances": "1",
-                "spark.executor.memory": "3g",
-                "spark.executor.cores": "2",
-                "spark.cores.max": "2",
-                "spark.driver.memory": "1g",
-                "spark.sql.adaptive.enabled": "true",
-                "spark.sql.shuffle.partitions": "4",
-                "spark.hadoop.dfs.replication": "1",
+                **SPARK_CONF,
                 "spark.jars": "/opt/spark/external-jars/mysql-connector-j-8.3.0.jar",
             },
             verbose=False,
         )
 
         landing_tasks.append(task)
+
+    # =====================================================
+    # TASK ENRICHMENT
+    # =====================================================
+
+    landing_clientes_enrichment = SparkSubmitOperator(
+        task_id="landing_clientes_enrichment",
+        application="/opt/spark/jobs/01_landing/landing_clientes_enrichment.py",
+        conn_id="spark_standalone",
+        deploy_mode="client",
+        name="landing_clientes_enrichment",
+        conf=SPARK_CONF,
+        verbose=True,
+    )
+
+    landing_tasks.append(landing_clientes_enrichment)
+
     # ===============================================
     # Trigger próxima DAG (RAW)
     # ===============================================
     trigger_raw = TriggerDagRunOperator(
-        task_id="trigger_raw_layer",
-        trigger_dag_id="02_raw_delta_merge_ecommerce",
+        task_id="trigger_raw_standardization",
+        trigger_dag_id="02_raw_standardization",
         wait_for_completion=False
     )
 
+    # ===============================================
     # Todas as tabelas precisam terminar
+    # ===============================================
     landing_tasks >> trigger_raw
