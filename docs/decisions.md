@@ -228,6 +228,8 @@ Utilizar Apache Airflow para orquestração dos pipelines de dados.
 
 Organizar pipelines em DAGs desacopladas por camada da arquitetura Medallion.
 
+### Estratégia
+
 ```text
 01_landing_ingestion
 02_raw_standardization
