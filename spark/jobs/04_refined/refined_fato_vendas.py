@@ -293,7 +293,6 @@ conformed_sales_fact_df = (
 # ======================================================
 # DATE SURROGATE KEY
 # ======================================================
-
 conformed_sales_fact_df = (
     conformed_sales_fact_df
     .withColumn(
@@ -308,7 +307,6 @@ conformed_sales_fact_df = (
 # ======================================================
 # DATE DIMENSION VALIDATION
 # ======================================================
-
 invalid_date_keys_count = (
     conformed_sales_fact_df.join(
         dim_date_df.select("sk_data"),
@@ -329,13 +327,11 @@ if invalid_date_keys_count > 0:
 # ======================================================
 # CACHE
 # ======================================================
-
 conformed_sales_fact_df.cache()
 
 # ======================================================
 # DATA QUALITY
 # ======================================================
-
 invalid_sales_fact_df = (
     conformed_sales_fact_df.filter(
         F.col("sk_cliente").isNull() |
@@ -359,7 +355,6 @@ valid_sales_fact_df.cache()
 # ======================================================
 # OBSERVABILITY
 # ======================================================
-
 total_records = conformed_sales_fact_df.count()
 valid_records = valid_sales_fact_df.count()
 invalid_records = invalid_sales_fact_df.count()
@@ -372,7 +367,6 @@ print(f"Registros rejeitados: {invalid_records}")
 # ======================================================
 # SAVE REJECTED RECORDS
 # ======================================================
-
 if invalid_records > 0:
 
     (
@@ -385,7 +379,6 @@ if invalid_records > 0:
 # ======================================================
 # BUSINESS METRICS
 # ======================================================
-
 enriched_sales_fact_df = (
     valid_sales_fact_df
     .withColumn(
@@ -400,27 +393,22 @@ enriched_sales_fact_df = (
 # ======================================================
 # FACT SURROGATE KEY
 # ======================================================
-
-keyed_sales_fact_df = (
-    enriched_sales_fact_df
-    .withColumn(
-        "sk_venda",
-        F.sha2(
-            F.concat_ws(
-                "|",
-                F.col("id_pedido").cast("string"),
-                F.col("id_item_pedido").cast("string"),
-                F.col("id_produto").cast("string")
-            ),
-            256
-        )
+keyed_sales_fact_df = enriched_sales_fact_df.withColumn(
+    "sk_venda",
+    F.sha2(
+        F.concat_ws(
+            "|",
+            F.col("id_pedido").cast("string"),
+            F.col("id_item_pedido").cast("string"),
+            F.col("id_produto").cast("string")
+        ),
+        256
     )
 )
 
 # ======================================================
 # FINAL FACT
 # ======================================================
-
 refined_sales_fact_df = (
     keyed_sales_fact_df.select(
         "sk_venda",
@@ -441,7 +429,6 @@ refined_sales_fact_df = (
 # ======================================================
 # DUPLICATE VALIDATION
 # ======================================================
-
 duplicated_sales_keys_df = (
     refined_sales_fact_df
     .groupBy("sk_venda")
@@ -462,7 +449,6 @@ if duplicated_sales_keys_df.count() > 0:
 # ======================================================
 # WRITE FACT TABLE
 # ======================================================
-
 if not DeltaTable.isDeltaTable(spark, sales_fact_path):
 
     (
@@ -551,7 +537,6 @@ LOCATION 'hdfs://namenode:8020/data/04_refined/ecommerce/rejected_fato_vendas'
 # ======================================================
 # FINAL LOG
 # ======================================================
-
 print("[FATO_VENDAS] OK")
 
 print(

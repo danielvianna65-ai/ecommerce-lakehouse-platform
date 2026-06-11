@@ -1,14 +1,55 @@
 # 📌 Architectural Decisions — Ecommerce Lakehouse Analytics Platform
 
-Este documento registra as principais decisões arquiteturais adotadas no projeto.
+Este documento registra as principais decisões arquiteturais adotadas na plataforma Ecommerce Lakehouse Analytics Platform.
 
-O objetivo é demonstrar os critérios técnicos utilizados na construção da arquitetura.
+O objetivo é documentar os critérios técnicos utilizados na construção da solução, bem como os trade-offs e benefícios das decisões implementadas.
 
 ---
 
-# ADR-001 — Uso da Arquitetura Medallion
+# Índice
 
-## Decisão
+## Fundação Arquitetural
+
+* ADR-001 — Uso da Arquitetura Medallion
+* ADR-002 — Uso de Apache Spark
+* ADR-003 — Spark Standalone Cluster
+* ADR-004 — Uso de Delta Lake
+* ADR-005 — Estratégia de Catálogo Desacoplado do Storage
+
+## Ingestão e Processamento
+
+* ADR-006 — Estratégia Incremental via Watermark
+* ADR-007 — Estratégia Híbrida Incremental
+* ADR-008 — Particionamento Temporal Incremental
+
+## Orquestração e Operação
+
+* ADR-009 — Uso de Apache Airflow
+* ADR-010 — Separação de DAGs por Camada
+* ADR-011 — Docker Compose para Infraestrutura
+
+## Modelagem Analítica
+
+* ADR-012 — Modelagem Dimensional
+* ADR-013 — Uso de SCD Tipo 2
+* ADR-014 — Estratégia de Surrogate Keys Determinísticas
+* ADR-015 — Estratégia de Quarantine / Rejected Records
+
+## Serving e Analytics
+
+* ADR-016 — Uso do Hive Metastore
+* ADR-017 — Uso do Spark ThriftServer
+* ADR-018 — Camada Semântica Analítica
+* ADR-019 — Organização da Camada Analytics Engineering
+* ADR-020 — Uso do Apache Superset
+
+---
+
+# Fundação Arquitetural
+
+## ADR-001 — Uso da Arquitetura Medallion
+
+### Decisão
 
 Utilizar arquitetura em múltiplas camadas:
 
@@ -16,25 +57,23 @@ Utilizar arquitetura em múltiplas camadas:
 Landing → Raw → Trusted → Refined
 ```
 
-## Motivação
+### Motivação
 
-Separar responsabilidades do pipeline para melhorar:
-
-* Governança
+* Governança de dados
 * Escalabilidade
-* Reprocessamento
+* Reprocessamento controlado
 * Qualidade de dados
 * Organização operacional
 
 ---
 
-# ADR-002 — Uso de Apache Spark
+## ADR-002 — Uso de Apache Spark
 
-## Decisão
+### Decisão
 
-Utilizar Apache Spark como engine de processamento distribuído.
+Utilizar Apache Spark como engine principal de processamento distribuído.
 
-## Benefícios
+### Benefícios
 
 * Escalabilidade horizontal
 * Processamento distribuído
@@ -43,13 +82,13 @@ Utilizar Apache Spark como engine de processamento distribuído.
 
 ---
 
-# ADR-003 — Spark Standalone Cluster
+## ADR-003 — Spark Standalone Cluster
 
-## Decisão
+### Decisão
 
-Utilizar Spark Standalone Cluster via Docker Compose.
+Utilizar Spark Standalone Cluster executando em Docker Compose.
 
-## Benefícios
+### Benefícios
 
 * Ambiente distribuído real
 * Simplicidade operacional
@@ -57,69 +96,124 @@ Utilizar Spark Standalone Cluster via Docker Compose.
 
 ---
 
-# ADR-004 — Uso de Delta Lake
+## ADR-004 — Uso de Delta Lake
 
-## Decisão
+### Decisão
 
 Utilizar Delta Lake nas camadas Raw, Trusted e Refined.
 
-## Benefícios
+### Benefícios
 
-* ACID transactions
+* ACID Transactions
 * Merge incremental
-* Time travel
+* Schema enforcement
+* Time Travel
 
 ---
 
-# ADR-005 — Estratégia Incremental via Watermark (Landing)
+## ADR-005 — Estratégia de Catálogo Desacoplado do Storage
 
-## Decisão
+### Decisão
 
-Utilizar estratégia incremental baseada em watermark para controle de ingestão incremental.
+Utilizar Hive Metastore apenas como catálogo centralizado, mantendo datasets Delta Lake persistidos diretamente no HDFS através de LOCATION explícita.
 
-## Estratégia
+### Estratégia
+
+```sql
+CREATE TABLE refined.fato_vendas
+USING DELTA
+LOCATION '/data/04_refined/ecommerce/fato_vendas'
+```
+
+### Motivação
+
+* Desacoplamento entre catálogo e armazenamento físico
+* Flexibilidade arquitetural
+* Rebuild controlado do Data Lake
+* Compatibilidade com múltiplas engines SQL
+* Governança centralizada de metadata
+
+### Benefícios
+
+* Independência entre metadata e storage
+* Recuperação simplificada
+* Maior controle operacional
+* Arquitetura alinhada a padrões Lakehouse
+
+---
+
+# Ingestão e Processamento
+
+## ADR-006 — Estratégia Incremental via Watermark
+
+### Decisão
+
+Utilizar estratégia incremental baseada em watermark para ingestão dos dados transacionais.
+
+### Estratégia
 
 ```sql
 WHERE data_transacao > watermark
 ```
 
-## Benefícios
+### Benefícios
 
 * Redução de I/O
 * Melhor performance
-* Execuções incrementais eficientes
+* Eficiência incremental
 
 ---
 
-# ADR-006 — Estratégia Híbrida Incremental (Raw e Trusted)
+## ADR-007 — Estratégia Híbrida Incremental
 
-## Decisão
+### Decisão
 
-Utilizar estratégia híbrida incremental combinando Unprocessed, Lookback e Delta Merge.
+Combinar Unprocessed, Lookback e Delta Merge nas camadas Raw e Trusted.
 
-## Estratégia
+### Estratégia
 
 * Unprocessed
 * Lookback
 * Delta Merge
 
-## Benefícios
+### Benefícios
 
 * Idempotência
-* Consistência incremental
 * Tratamento de late arriving data
+* Consistência incremental
 
 ---
 
-# ADR-007 — Uso de Apache Airflow
+## ADR-008 — Particionamento Temporal Incremental
 
-## Decisão
+### Decisão
+
+Particionar datasets utilizando a coluna dt derivada da data de transação.
+
+### Estratégia
+
+```text
+dt=YYYY-MM-DD
+```
+
+### Benefícios
+
+* Partition pruning
+* Melhor performance
+* Eficiência incremental
+* Redução de I/O
+
+---
+
+# Orquestração e Operação
+
+## ADR-009 — Uso de Apache Airflow
+
+### Decisão
 
 Utilizar Apache Airflow para orquestração dos pipelines de dados.
 
-## Motivação
-
-Necessidade de:
+### Benefícios
 
 * Agendamento
 * Observabilidade
@@ -128,13 +222,20 @@ Necessidade de:
 
 ---
 
-# ADR-008 — Separação de DAGs por Camada
+## ADR-010 — Separação de DAGs por Camada
 
-## Decisão
+### Decisão
 
 Organizar pipelines em DAGs desacopladas por camada da arquitetura Medallion.
 
-## Benefícios
+```text
+01_landing_ingestion
+02_raw_standardization
+03_trusted_validation 
+04_refined_dimensional_modeling
+```
+
+### Benefícios
 
 * Responsabilidade clara
 * Melhor monitoramento
@@ -142,77 +243,13 @@ Organizar pipelines em DAGs desacopladas por camada da arquitetura Medallion.
 
 ---
 
-# ADR-009 — Modelagem Dimensional
+## ADR-011 — Docker Compose para Infraestrutura
 
-## Decisão
-
-Utilizar Star Schema na camada Refined.
-
-## Benefícios
-
-* Performance analítica
-* Facilidade para BI
-* Organização dimensional
-
----
-
-# ADR-010 — Uso de SCD Tipo 2
-
-## Decisão
-
-Utilizar Slowly Changing Dimension Tipo 2 (SCD Type 2) nas dimensões históricas da camada Refined.
-
-## Estratégia
-
-Utilização de:
-
-* hash_diff
-* dt_inicio
-* dt_fim
-* is_current
-
-## Benefícios
-
-* Histórico completo
-* Auditoria
-* Rastreabilidade
-
----
-
-# ADR-011 — Particionamento Temporal Incremental
-
-## Decisão
-
-Utilizar particionamento temporal baseado na data de transação de negócio nas tabelas incrementais do Data Lake.
-
-## Estratégia
-
-As tabelas são particionadas pela coluna:
-
-```text
-dt=YYYY-MM-DD
-```
-
-A coluna `dt` é derivada da data de transação (`data_transacao`) utilizada no processamento incremental dos datasets.
-
-## Benefícios
-
-* Partition pruning
-* Melhor performance
-* Eficiência incremental
-* Redução de I/O
-* Reprocessamento controlado por partição
-* Alinhamento temporal com eventos de negócio
-
----
-
-# ADR-012 — Docker Compose para Infraestrutura
-
-## Decisão
+### Decisão
 
 Utilizar Docker Compose para provisionamento e orquestração da infraestrutura distribuída da plataforma.
 
-## Benefícios
+### Benefícios
 
 * Reprodutibilidade
 * Facilidade de setup
@@ -220,170 +257,95 @@ Utilizar Docker Compose para provisionamento e orquestração da infraestrutura 
 
 ---
 
-# ADR-013 — Uso do Hive Metastore
+# Modelagem Analítica
 
-## Decisão
+## ADR-012 — Modelagem Dimensional
 
-Utilizar Hive Metastore como catálogo centralizado.
+### Decisão
 
-## Motivação
+Utilizar Star Schema na camada Refined.
 
-Necessidade de:
+### Benefícios
 
-* Governança analítica
-* Camada analítica SQL
-* Integração com BI
-* Metadata centralizada
-
-## Benefícios
-
-* Centralização de schemas
-* Compatibilidade SQL
-* Integração analítica
+* Performance analítica
+* Facilidade para BI
+* Organização dimensional
 
 ---
 
-# ADR-014 — Uso do Spark ThriftServer
+## ADR-013 — Uso de SCD Tipo 2
 
-## Decisão
+### Decisão
 
-Utilizar Spark ThriftServer como camada SQL.
+Implementar Slowly Changing Dimension Type 2 nas dimensões históricas.
 
-## Motivação
+### Estratégia
 
-Necessidade de:
+As dimensões históricas utilizam:
 
-* JDBC/ODBC serving
-* Integração com ferramentas BI
-* Consultas SQL distribuídas
+* hash_diff para detecção de mudanças de atributos
+* dt_inicio para controle de vigência
+* dt_fim para encerramento da versão histórica
+* is_current para identificação da versão ativa
 
-## Benefícios
+### Benefícios
 
-* SQL serving distribuído
-* Integração com Superset
-* Analytics sobre Spark SQL
-
----
-
-# ADR-015 — Uso do Apache Superset
-
-## Decisão
-
-Utilizar Apache Superset como camada de Business Intelligence.
-
-## Motivação
-
-Necessidade de:
-
-* Dashboards executivos
-* Consumo analítico
-* Visualização de métricas
-
-## Benefícios
-
-* Dashboards interativos
-* Semantic analytics
-* Visualização executiva
+* Histórico completo
+* Auditoria
+* Rastreabilidade temporal
 
 ---
 
-# ADR-016 — Camada Semântica Analítica
+## ADR-014 — Estratégia de Surrogate Keys Determinísticas
 
-## Decisão
+### Decisão
 
-Utilizar views analíticas como semantic layer.
+Utilizar surrogate keys determinísticas baseadas em SHA-256 nas dimensões e tabela fato da camada Refined.
 
-## Principal View
+### Estratégia
 
-```sql
-refined.vw_fato_vendas_enriquecida
-```
+Dimensões SCD Tipo 2:
 
-## Benefícios
+* sk_cliente = SHA256(id_cliente + dt_inicio)
+* sk_produto = SHA256(id_produto + dt_inicio)
 
-* Reutilização analítica
-* Padronização de métricas
-* Simplificação para BI
+Dimensões Snapshot:
 
----
-# ADR-017 — Organização da Camada Analytics Engineering
+* sk_pagamento = SHA256(id_pagamento)
 
-## Decisão
+Dimensão Data:
 
-Organizar consultas analíticas, KPIs executivos e semantic layer por domínio analítico dentro da estrutura:
+* sk_data = YYYYMMDD (Date Key)
 
-```text
-superset/sql/
-```
-## Estrutura
+Tabela Fato:
 
-* semantic_layer
-* executive_kpis
-* sales_analytics
-* customer_analytics
-* payment_analytics
-* product_analytics
+* sk_venda = SHA256(id_pedido + id_item_pedido + id_produto)
 
-## Motivação
+### Motivação
 
-Necessidade de:
+* Garantir unicidade dos registros
+* Permitir reprocessamentos completos
+* Eliminar dependência de sequências globais
+* Garantir reprodutibilidade das chaves
+* Simplificar geração de chaves em ambiente distribuído Spark
 
-* Padronizar consultas analíticas
-* Reutilizar SQL entre dashboards
-* Centralizar regras analíticas
-* Reduzir complexidade na camada BI
-* Melhorar organização e manutenção das queries
+### Benefícios
 
-## Benefícios
-
-* Reutilização analítica
-* Padronização de métricas
-* Organização modular
-* Simplificação dos dashboards
-* Melhor governança analítica
-* Separação entre serving analítico e visualização BI
-
----
-# ADR-018 — Estratégia de Catálogo Desacoplado do Storage
-
-## Decisão
-
-Utilizar Hive Metastore apenas como catálogo centralizado, mantendo datasets Delta Lake persistidos diretamente no HDFS através de LOCATION explícita.
-
-## Estratégia
-
-```sql
-CREATE TABLE refined.fato_vendas
-USING DELTA
-LOCATION '/data/04_refined/ecommerce/fato_vendas'
-```
-
-## Motivação
-
-Necessidade de:
-
-* Desacoplamento entre catálogo e armazenamento físico
-* Flexibilidade arquitetural
-* Rebuild controlado do Data Lake
-* Compatibilidade com múltiplas engines SQL
-* Governança centralizada de metadata
-
-## Benefícios
-* Independência entre metadata e storage
-* Facilidade de recuperação operacional
-* Arquitetura alinhada a padrões modernos Lakehouse
-* Maior controle sobre paths físicos
-* Flexibilidade operacional
+* Processamento idempotente
+* Reprodutibilidade
+* Simplicidade operacional
+* Compatibilidade com arquiteturas Lakehouse
+* Independência de mecanismos centralizados de geração de IDs
 
 ---
 
-# ADR-019 — Estratégia de Quarantine / Rejected Records
+## ADR-015 — Estratégia de Quarantine / Rejected Records
 
-## Decisão
+### Decisão
 
 Implementar camada de quarentena para registros inválidos durante o processamento analítico da camada Refined.
 
-## Estratégia
+### Estratégia
 
 Registros que falham nas validações de conformidade dimensional são direcionados para tabelas de rejeição dedicadas.
 
@@ -395,30 +357,151 @@ rejected_fato_vendas
 A validação ocorre após os joins dimensionais da tabela fato.
 
 Registros são rejeitados quando surrogate keys obrigatórias retornam valores nulos:
-
-* sk_cliente
-* sk_produto
-* sk_pagamento
+* sk_cliente 
+* sk_produto 
+* sk_pagamento 
 * sk_data_pedido
 
-## Motivação
+### Motivação
+
+* Garantir integridade dimensional 
+* Evitar fatos órfãos  
+* Preservar consistência analítica  
+* Melhorar observabilidade operacional  
+* Permitir rastreabilidade de falhas de qualidade
+
+### Benefícios
+* Separação entre registros válidos e inválidos 
+* Melhor governança de qualidade 
+* Facilidade de troubleshooting 
+* Auditoria operacional 
+* Maior confiabilidade analítica 
+* Estratégia alinhada a padrões enterprise de Data Quality
+
+---
+
+# Serving e Analytics
+
+## ADR-016 — Uso do Hive Metastore
+
+### Decisão
+Utilizar Hive Metastore como catálogo centralizado.
+
+### Motivação
 
 Necessidade de:
 
-* Garantir integridade dimensional
-* Evitar fatos órfãos
-* Preservar consistência analítica
-* Melhorar observabilidade operacional
-* Permitir rastreabilidade de falhas de qualidade
+* Governança analítica
+* Camada analítica SQL
+* Integração com BI
+* Metadata centralizada
 
-## Benefícios
+### Benefícios
 
-* Separação entre registros válidos e inválidos
-* Melhor governança de qualidade
-* Facilidade de troubleshooting
-* Auditoria operacional
-* Maior confiabilidade analítica
-* Estratégia alinhada a padrões enterprise de Data Quality
+* Centralização de schemas
+* Compatibilidade SQL
+* Integração analítica
+
+---
+
+## ADR-017 — Uso do Spark ThriftServer
+
+### Decisão
+
+Utilizar Spark ThriftServer como camada SQL.
+
+### Motivação
+
+Necessidade de:
+
+* JDBC/ODBC serving 
+* Integração com ferramentas BI 
+* Consultas SQL distribuídas
+
+### Benefícios
+* SQL serving distribuído 
+* Integração com Superset 
+* Analytics sobre Spark SQL
+
+---
+
+## ADR-018 — Camada Semântica Analítica
+
+### Decisão
+
+Utilizar views analíticas como semantic layer.
+
+### Principal View
+
+```sql 
+refined.vw_fato_vendas_enriquecida
+```
+
+### Benefícios 
+
+* Reutilização analítica 
+* Padronização de métricas 
+* Simplificação para BI
+
+---
+## ADR-019 — Organização da Camada Analytics Engineering
+
+### Decisão
+
+Organizar consultas analíticas, KPIs executivos e semantic layer por domínio analítico dentro da estrutura:
+
+```text 
+superset/sql/
+```
+### Estrutura
+
+* semantic_layer 
+* executive_kpis 
+* sales_analytics 
+* customer_analytics 
+* payment_analytics 
+* product_analytics
+
+### Motivação
+
+Necessidade de:
+* Padronizar consultas analíticas 
+* Reutilizar SQL entre dashboards 
+* Centralizar regras analíticas 
+* Reduzir complexidade na camada BI 
+* Melhorar organização e manutenção das queries
+
+### Benefícios
+
+* Reutilização analítica 
+* Padronização de métricas 
+* Organização modular 
+* Simplificação dos dashboards 
+* Melhor governança analítica 
+* Separação entre serving analítico e visualização BI
+
+---
+
+## ADR-020 — Uso do Apache Superset
+
+### Decisão
+
+Utilizar Apache Superset como camada de Business Intelligence.
+
+### Motivação
+
+Necessidade de:
+
+* Dashboards executivos 
+* Consumo analítico 
+* Visualização de métricas
+
+### Benefícios
+
+* Dashboards interativos 
+* Semantic analytics 
+* Visualização executiva
+
 
 ---
 
@@ -429,8 +512,8 @@ As decisões arquiteturais adotadas priorizam:
 * Escalabilidade
 * Governança
 * Analytics distribuído
-* Camada analítica SQL distribuída
-* Lakehouse architecture
+* Lakehouse Architecture
 * Business Intelligence
 * Reprocessamento controlado
 * Consistência analítica
+* Eficiência operacional

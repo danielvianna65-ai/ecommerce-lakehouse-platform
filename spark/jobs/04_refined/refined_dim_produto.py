@@ -96,7 +96,14 @@ scd2_products_df = (
 # =====================================================
 scd2_products_df = scd2_products_df.withColumn(
     "sk_produto",
-    F.abs(F.hash("id_produto", "dt_inicio")).cast("bigint")
+    F.sha2(
+        F.concat_ws(
+            "|",
+            F.col("id_produto").cast("string"),
+            F.col("dt_inicio").cast("string")
+        ),
+        256
+    )
 )
 
 # ======================================================

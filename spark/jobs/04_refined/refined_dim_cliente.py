@@ -67,7 +67,14 @@ scd2_customers_df = scd2_customers_df.withColumn("is_current", F.lit(True))
 # ======================================================
 scd2_customers_df = scd2_customers_df.withColumn(
     "sk_cliente",
-    F.abs(F.hash("id_cliente", "dt_inicio")).cast("bigint")
+    F.sha2(
+        F.concat_ws(
+            "|",
+            F.col("id_cliente").cast("string"),
+            F.col("dt_inicio").cast("string")
+        ),
+        256
+    )
 )
 
 scd2_customers_df = scd2_customers_df.withColumn(

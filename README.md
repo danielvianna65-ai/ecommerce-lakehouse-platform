@@ -121,7 +121,8 @@ Camada analítica baseada em modelagem dimensional.
 
 * Star Schema
 * Tabelas fato e dimensão
-* SCD Tipo 2
+* * Surrogate Keys determinísticas (SHA-256) para dimensões e fatos analíticos
+* SCD Tipo 2 para dimensões históricas
 * Camada semântica analítica
 * Datasets Delta Lake otimizados para consulta analítica
 * Enriquecimento dimensional
@@ -201,12 +202,36 @@ Granularidade:
 
 ## Dimensões
 
-| Dimensão      | Estratégia |
-| ------------- | ---------- |
-| dim_cliente   | SCD Tipo 2 |
-| dim_produto   | SCD Tipo 2 |
-| dim_pagamento | Snapshot   |
-| dim_data      | Calendário |
+| Dimensão      | Estratégia                          |
+|---------------|-------------------------------------|
+| dim_cliente   | SCD Tipo 2 + SHA256(BK + dt_inicio) |
+| dim_produto   | SCD Tipo 2 + SHA256(BK + dt_inicio) |
+| dim_pagamento | Snapshot + SHA256(id_pagamento)     |
+| dim_data      | Calendário                          |
+
+### Estratégia de Surrogate Keys
+
+A camada Refined utiliza surrogate keys determinísticas baseadas em SHA-256 para garantir unicidade, reprodutibilidade e suporte a reprocessamentos completos.
+
+Dimensões SCD Tipo 2:
+
+- sk_cliente = SHA256(id_cliente + dt_inicio)
+- sk_produto = SHA256(id_produto + dt_inicio)
+
+Dimensões Snapshot:
+
+- sk_pagamento = SHA256(id_pagamento)
+
+Dimensão Data:
+- sk_data = YYYYMMDD (Date Key)
+
+Tabela Fato:
+
+- sk_venda = SHA256(id_pedido + id_item_pedido + id_produto)
+
+As dimensões Cliente e Produto implementam Slowly Changing Dimension Type 2 (SCD2), preservando versões históricas através da combinação da Business Key com a data de início de vigência do registro.
+
+Essa abordagem elimina dependência de sequências globais, garante reprodutibilidade das chaves, facilita reprocessamentos idempotentes e simplifica a geração de identificadores em ambientes distribuídos Apache Spark.
 
 ---
 

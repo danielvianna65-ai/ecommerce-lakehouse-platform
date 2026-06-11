@@ -40,7 +40,10 @@ trusted_payments_df = (
 # =====================================================
 payment_dimension_base_df = trusted_payments_df.withColumn(
     "sk_pagamento",
-    F.abs(F.hash("id_pagamento")).cast("bigint")
+    F.sha2(
+        F.col("id_pagamento").cast("string"),
+        256
+    )
 )
 
 # =====================================================
