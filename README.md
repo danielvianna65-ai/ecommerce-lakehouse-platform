@@ -121,7 +121,7 @@ Camada analítica baseada em modelagem dimensional.
 
 * Star Schema
 * Tabelas fato e dimensão
-* * Surrogate Keys determinísticas (SHA-256) para dimensões e fatos analíticos
+* Surrogate Keys determinísticas (SHA-256) para dimensões e fatos analíticos
 * SCD Tipo 2 para dimensões históricas
 * Camada semântica analítica
 * Datasets Delta Lake otimizados para consulta analítica
