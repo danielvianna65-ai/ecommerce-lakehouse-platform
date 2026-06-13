@@ -25,13 +25,13 @@ TABLES_ECOMMERCE = [
 # SPARK CONFIGS
 # =========================================================
 SPARK_CONF = {
-    "spark.executor.instances": "1",
-    "spark.executor.memory": "3g",
-    "spark.executor.cores": "2",
+    "spark.executor.instances": "2",
+    "spark.executor.memory": "2g",
+    "spark.executor.cores": "1",
     "spark.cores.max": "2",
     "spark.driver.memory": "1g",
     "spark.sql.adaptive.enabled": "true",
-    "spark.sql.shuffle.partitions": "4",
+    "spark.sql.shuffle.partitions": "2",
     "spark.hadoop.dfs.replication": "1",
 }
 

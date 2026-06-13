@@ -115,6 +115,8 @@ incremental_partitioned_df = incremental_extract_df.withColumn(
     to_date(col(watermark_col))
 )
 
+incremental_partitioned_df.cache()
+
 # =====================================================
 # 7) Escrever incremental na LANDING
 # =====================================================
@@ -135,6 +137,8 @@ latest_incremental_watermark = (
     .agg(spark_max(col(watermark_col)).alias("max_ts"))
     .collect()[0]["max_ts"]
 )
+
+incremental_partitioned_df.unpersist()
 
 if latest_incremental_watermark:
     print(f"[INFO] Novo watermark calculado: {latest_incremental_watermark}")

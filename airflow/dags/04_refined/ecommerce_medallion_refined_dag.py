@@ -17,13 +17,13 @@ DIM_JOBS = [
 ]
 
 SPARK_CONF = {
-    "spark.executor.instances": "1",
-    "spark.executor.memory": "3g",
-    "spark.executor.cores": "2",
+    "spark.executor.instances": "2",
+    "spark.executor.memory": "2g",
+    "spark.executor.cores": "1",
     "spark.cores.max": "2",
     "spark.driver.memory": "1g",
     "spark.sql.adaptive.enabled": "true",
-    "spark.sql.shuffle.partitions": "4",
+    "spark.sql.shuffle.partitions": "2",
     "spark.hadoop.dfs.replication": "1",
     "spark.master": "spark://spark-master:7077",
     "spark.sql.extensions": "io.delta.sql.DeltaSparkSessionExtension",
@@ -42,11 +42,11 @@ SPARK_CONF = {
 }
 
 SPARK_CONF_FATO = {
-    "spark.executor.instances": "1",
-    "spark.executor.memory": "14g",
-    "spark.executor.cores": "8",
-    "spark.driver.memory": "2g",
-    "spark.sql.shuffle.partitions": "16",
+    "spark.executor.instances": "8",
+    "spark.executor.memory": "2g",
+    "spark.executor.cores": "1",
+    "spark.driver.memory": "1g",
+    "spark.sql.shuffle.partitions": "8",
     "spark.hadoop.dfs.replication": "1",
     "spark.sql.adaptive.enabled": "true",
     "spark.master": "spark://spark-master:7077",
