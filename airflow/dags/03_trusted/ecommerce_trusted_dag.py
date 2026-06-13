@@ -32,8 +32,6 @@ SPARK_CONF = {
     "spark.driver.memory": "1g",
     "spark.sql.adaptive.enabled": "true",
     "spark.sql.shuffle.partitions": "2",
-    "spark.sql.shuffle.partitions": "2",
-    "spark.sql.shuffle.partitions": "2",
     "spark.hadoop.dfs.replication": "1",
     "spark.sql.extensions": "io.delta.sql.DeltaSparkSessionExtension",
     "spark.sql.catalog.spark_catalog": "org.apache.spark.sql.delta.catalog.DeltaCatalog",
