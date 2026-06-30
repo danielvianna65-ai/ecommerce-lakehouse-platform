@@ -56,7 +56,7 @@ services:
       AIRFLOW__WEBSERVER__COOKIE_SECURE: "False"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-}:${AIRFLOW_DB_PASSWORD:-}@airflow-db:5432/${AIRFLOW_DB_NAME:-}
       AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "False"
-      AIRFLOW__CORE__DEFAULT_TIMEZONE: America/Sao_Paulo
+      AIRFLOW__CORE__DEFAULT_TIMEZONE: America/Sao_Paulodocker compose
       AIRFLOW_VAR_ECOMMERCE_JDBC_URL: ${ECOMMERCE_JDBC_URL:-}
       AIRFLOW_VAR_ECOMMERCE_JDBC_USER: ${ECOMMERCE_JDBC_USER:-}
       AIRFLOW_VAR_ECOMMERCE_JDBC_PASSWORD: ${ECOMMERCE_JDBC_PASSWORD:-}
@@ -325,6 +325,39 @@ services:
       - PYSPARK_DRIVER_PYTHON=python3
       - TZ=America/Sao_Paulo
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Sao_Paulo
+    networks:
+      - medallion-net
+
+  # =========================
+  # SPARK HISTORY SERVER
+  # =========================
+  spark-history:
+    build: ../../spark
+    image: apache/spark:3.5.8
+    restart: unless-stopped
+
+    depends_on:
+      - namenode
+
+    command: >
+      /opt/spark/bin/spark-class
+      org.apache.spark.deploy.history.HistoryServer
+
+    ports:
+      - "18080:18080"
+
+    volumes:
+      - ../../spark:/opt/spark/app
+      - ../../spark/jobs:/opt/spark/jobs
+      - *spark-jars
+      - ../../infra/hadoop:/opt/hadoop/etc/hadoop
+
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=hdfs://namenode:8020/spark-events
+      - TZ=America/Sao_Paulo
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Sao_Paulo
+
     networks:
       - medallion-net
 

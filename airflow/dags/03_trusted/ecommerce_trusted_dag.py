@@ -31,6 +31,8 @@ SPARK_CONF = {
     "spark.cores.max": "2",
     "spark.driver.memory": "1g",
     "spark.sql.adaptive.enabled": "true",
+    "spark.eventLog.enabled": "true",
+    "spark.eventLog.dir": "hdfs://namenode:8020/spark-events",
     "spark.sql.shuffle.partitions": "2",
     "spark.hadoop.dfs.replication": "1",
     "spark.sql.extensions": "io.delta.sql.DeltaSparkSessionExtension",
