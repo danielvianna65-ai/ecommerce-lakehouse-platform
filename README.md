@@ -16,9 +16,10 @@ A arquitetura simula um ambiente enterprise de Lakehouse Analytics incluindo:
 * Processamento distribuído
 * Modelagem dimensional
 * Camada analítica SQL
-* Analytics e BI
+* analytics SQL, observabilidade operacional e consumo de Business Intelligence
 * Governança de dados
 * Data Lake distribuído
+* Observabilidade de aplicações Spark
 
 ---
 
@@ -52,18 +53,20 @@ permitindo maior flexibilidade arquitetural e alinhamento com arquiteturas moder
 ---
 # 🧱 Stack Tecnológica
 
-| Tecnologia                 | Finalidade                              |
-|----------------------------|------------------------------------------|
-| Apache Airflow 2.10.5      | Orquestração                            |
-| Apache Spark 3.5.8         | Processamento distribuído               |
-| Delta Lake 3.2.0           | ACID + Merge incremental                |
-| Hadoop HDFS 3.2.1          | Data Lake distribuído                   |
-| Hive Metastore 4.0.0       | Catálogo centralizado                   |
-| Spark ThriftServer 3.5.8   | Camada SQL                              |
-| Apache Superset            | BI Analytics                            |
-| PostgreSQL 15 (Airflow DB) | Metadata do Airflow                     |
-| PostgreSQL 15 (Hive DB)    | Backend do Hive Metastore               |
-| Docker Compose 5.1.3       | Infraestrutura                          |
+| Tecnologia                        | Finalidade                                                     |
+|-----------------------------------|----------------------------------------------------------------|
+| Apache Airflow 2.10.5             | Orquestração                                                   |
+| Apache Spark 3.5.8                | Processamento distribuído                                      |
+| Apache Spark History Server 3.5.8 | Histórico e observabilidade das aplicações Spark               |
+| Delta Lake 3.2.0                  | ACID + Merge incremental                                       |
+| Hadoop HDFS 3.2.1                 | Data Lake distribuído                                          |
+| Hive Metastore 4.0.0              | Catálogo centralizado                                          |
+| Spark ThriftServer 3.5.8          | Camada SQL                                                     |
+| Apache Superset                   | BI Analytics                                                   |
+| PostgreSQL 15 (Airflow DB)        | Metadata do Airflow                                            |
+| PostgreSQL 15 (Hive DB)           | Backend do Hive Metastore                                      |
+| Docker Compose 5.1.3              | Infraestrutura                                                 |
+
 
 ---
 
@@ -180,6 +183,36 @@ A view semântica centraliza os dados consumidos pelos dashboards, métricas e a
 
 ---
 
+# 📈 Observabilidade
+
+A plataforma implementa componentes de observabilidade para monitoramento operacional dos pipelines distribuídos.
+
+## Apache Airflow
+
+Responsável pela orquestração, monitoramento das DAGs, controle de dependências e gerenciamento de falhas.
+
+## Spark UI
+
+Utilizada para análise das aplicações Spark durante a execução, permitindo acompanhar Jobs, Stages, Tasks e métricas de desempenho em tempo real. A interface permanece disponível apenas enquanto a aplicação está ativa.
+## Spark History Server
+
+Responsável pela persistência das aplicações Spark finalizadas. Permitindo análise histórica das execuções através dos Event Logs armazenados no HDFS.
+
+### Principais métricas analisadas
+
+* Jobs
+* Stages
+* Tasks
+* DAG de execução
+* Shuffle Read / Write
+* Spill
+* Data Skew
+* Uso de memória
+* Tempo de execução
+* Executors
+
+---
+
 # 🧠 Modelagem Dimensional
 
 A camada Refined implementa um modelo dimensional baseado em Star Schema.
@@ -293,6 +326,11 @@ Essa abordagem elimina dependência de sequências globais, garante reprodutibil
 ![Spark](docs/screenshots/spark_cluster.png)
 
 ---
+## Spark History Server
+
+![Spark History Server](docs/screenshots/spark_history_server.png)
+
+---
 
 ## Hadoop HDFS
 
@@ -312,12 +350,13 @@ docker compose -f infra/docker/docker-compose.yml up -d
 
 # 🌐 Serviços
 
-| Serviço         | URL                                            |
-| --------------- | ---------------------------------------------- |
-| Airflow         | [http://localhost:8080](http://localhost:8080) |
-| Spark Master UI | [http://localhost:8081](http://localhost:8081) |
-| HDFS Namenode   | [http://localhost:9870](http://localhost:9870) |
-| Superset        | [http://localhost:8088](http://localhost:8088) |
+| Serviço              | URL                                              |
+|----------------------|--------------------------------------------------|
+| Airflow              | [http://localhost:8080](http://localhost:8080)   |
+| Spark Master UI      | [http://localhost:8081](http://localhost:8081)   |
+| HDFS Namenode        | [http://localhost:9870](http://localhost:9870)   |
+| Superset             | [http://localhost:8088](http://localhost:8088)   |
+| Spark History Server | [http://localhost:18080](http://localhost:18080) |
 
 ---
 
@@ -335,6 +374,8 @@ docker compose -f infra/docker/docker-compose.yml up -d
 * Dashboards executivos
 * Infraestrutura dockerizada
 * Arquitetura Lakehouse
+* Observabilidade de aplicações Spark
+* Monitoramento operacional de pipelines
 
 ---
 
@@ -370,4 +411,5 @@ Demonstrar a construção de uma plataforma moderna de engenharia e analytics de
 * Modelagem Dimensional
 * Business Intelligence
 * Governança de Dados
-
+* Observabilidade Operacional
+* Otimização de Processamento Distribuído
