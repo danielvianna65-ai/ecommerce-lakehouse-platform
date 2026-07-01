@@ -193,7 +193,8 @@ Responsável pela orquestração, monitoramento das DAGs, controle de dependênc
 
 ## Spark UI
 
-Utilizada para análise das aplicações Spark durante a execução, permitindo acompanhar Jobs, Stages, Tasks e métricas de desempenho em tempo real. A interface permanece disponível apenas enquanto a aplicação está ativa.
+Responsável pela persistência do histórico das aplicações Spark finalizadas, permitindo a análise das execuções por meio dos Event Logs armazenados no HDFS.
+
 ## Spark History Server
 
 Responsável pela persistência das aplicações Spark finalizadas. Permitindo análise histórica das execuções através dos Event Logs armazenados no HDFS.
