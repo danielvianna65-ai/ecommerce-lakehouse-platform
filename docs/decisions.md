@@ -43,6 +43,10 @@ O objetivo é documentar os critérios técnicos utilizados na construção da s
 * ADR-019 — Organização da Camada Analytics Engineering
 * ADR-020 — Uso do Apache Superset
 
+## Observabilidade
+
+* ADR-021 — Uso do Spark History Server
+
 ---
 
 # Fundação Arquitetural
@@ -504,6 +508,42 @@ Necessidade de:
 * Semantic analytics 
 * Visualização executiva
 
+---
+
+## ADR-021 — Uso do Spark History Server
+
+### Decisão
+
+Utilizar Apache Spark History Server para persistência e análise do histórico das aplicações Spark executadas na plataforma.
+
+### Estratégia
+
+Habilitar a geração de Event Logs durante a execução das aplicações Spark e armazená-los no HDFS.
+
+```text
+spark.eventLog.enabled=true
+spark.eventLog.dir=hdfs://namenode:8020/spark-events
+
+spark.history.fs.logDirectory=hdfs://namenode:8020/spark-events
+```
+
+### Motivação
+
+Necessidade de:
+* Persistir o histórico das aplicações Spark
+* Analisar execuções finalizadas
+* Investigar gargalos de desempenho
+* Facilitar troubleshooting
+* Comparar execuções após otimizações
+
+### Benefícios
+
+* Histórico permanente das aplicações Spark
+* Análise de Jobs, Stages e Tasks 
+* Visualização do DAG de execução
+* Monitoramento de Shuffle, Spill e Skew
+* Apoio à otimização de pipelines
+* Melhor observabilidade operacional
 
 ---
 

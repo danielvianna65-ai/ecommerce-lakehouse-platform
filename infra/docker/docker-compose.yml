@@ -354,6 +354,7 @@ services:
 
     environment:
       - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - HADOOP_USER_NAME=airflow
       - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=hdfs://namenode:8020/spark-events
       - TZ=America/Sao_Paulo
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Sao_Paulo
